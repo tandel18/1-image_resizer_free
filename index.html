@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Image Resizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .drop-zone {
+            border: 2px dashed #007bff;
+            padding: 3rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+        }
+
+        .drop-zone:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        input[type="range"], input[type="number"], select {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .preview {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        #previewImage {
+            max-width: 300px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .animation-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            text-align: center;
+            display: none;
+        }
+
+        .animation-gif {
+            width: 200px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="drop-zone" id="dropZone">
+            <p>Drag & Drop images here or click to upload</p>
+            <input type="file" id="fileInput" hidden accept="image/*">
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Resize Percentage</label>
+                <input type="range" id="percentage" min="1" max="100" value="100">
+                <input type="number" id="percentageValue" min="1" max="100" value="100">
+            </div>
+
+            <div class="control-group">
+                <label>Pixel Dimensions</label>
+                <input type="number" id="width" placeholder="Width">
+                <input type="number" id="height" placeholder="Height">
+            </div>
+
+            <div class="control-group">
+                <label>Target File Size</label>
+                <input type="number" id="fileSize" value="100">
+                <select id="sizeUnit">
+                    <option value="KB">KB</option>
+                    <option value="MB">MB</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="preview">
+            <img id="previewImage" alt="Preview">
+        </div>
+
+        <div class="action-buttons">
+            <button id="downloadBtn">Download</button>
+            <button id="shareBtn">Share</button>
+        </div>
+    </div>
+
+    <div class="animation-modal" id="animationModal">
+        <img src="https://i.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif" class="animation-gif" alt="Done Animation">
+        <h2>Processing Complete!</h2>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const previewImage = document.getElementById('previewImage');
+        const animationModal = document.getElementById('animationModal');
+        let currentImage = null;
+
+        // File Upload Handling
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#0056b3';
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#007bff';
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            handleImage(file);
+        });
+        fileInput.addEventListener('change', () => handleImage(fileInput.files[0]));
+
+        function handleImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                currentImage = new Image();
+                currentImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Resize Controls
+        document.getElementById('percentage').addEventListener('input', updatePercentage);
+        document.getElementById('percentageValue').addEventListener('input', updatePercentage);
+        
+        function updatePercentage(e) {
+            const value = e.target.value;
+            document.getElementById('percentage').value = value;
+            document.getElementById('percentageValue').value = value;
+            // Add resize logic here
+        }
+
+        // Add similar event listeners for other controls
+
+        // Download Button
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            // Add download logic
+            showAnimation();
+        });
+
+        // Share Button
+        document.getElementById('shareBtn').addEventListener('click', async () => {
+            try {
+                await navigator.share({
+                    title: 'Resized Image',
+                    files: [/* Add file handle here */]
+                });
+            } catch (err) {
+                console.log('Sharing failed:', err);
+            }
+        });
+
+        function showAnimation() {
+            animationModal.style.display = 'block';
+            setTimeout(() => {
+                animationModal.style.display = 'none';
+            }, 3000);
+        }
+
+        // Add more resize logic and size calculations here
+    </script>
+</body>
+</html>
